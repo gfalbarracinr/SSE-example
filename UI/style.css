@@ -65,11 +65,31 @@ footer {
 }
 
 .ping {
-    font-size: 16px;
+    font-size: 10px;
     color: #333;
     width: 10px;
     height: 10px;
     position: relative;
-    right: 10px;
-    top: 10px;
+    left: calc(100% - 80px);
+    top: -40px;
+}
+
+.status-icon {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-left: 10px;
+}
+
+.alive {
+    background-color: green;
+    animation: ping 1s infinite;
+    width: 10px;
+    border-radius: 50%;
+}
+
+.dead {
+    width: 10px;
+    border-radius: 50%;
+    background-color: red;
 }

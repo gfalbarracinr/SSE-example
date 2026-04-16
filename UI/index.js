@@ -4,10 +4,13 @@ const handleSubmit = (event) => {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-    createStatus(formData.get('link'))
+    const link = formData.get('link');
+    form.reset(); 
+    createStatus(link)
 }
 
 const createStatus = async (link) => {
+    const url = new URL(link);
     const statusSection = document.getElementById('status-section');
     let statusElement = document.querySelector(`.status[data-link="${link}"]`);
 
@@ -16,7 +19,7 @@ const createStatus = async (link) => {
         statusElement.classList.add('status');
         statusElement.dataset.link = link;
         statusElement.innerHTML = `
-            <h1 class='status-title'>${link}</h1>
+            <h1 class='status-title'>${url.hostname}</h1>
         `;
         statusSection.appendChild(statusElement);
     }
@@ -29,6 +32,19 @@ const createStatus = async (link) => {
     }
 }
 
+const createEventStatus = (status) => {
+    const icon = document.createElement('i')
+    icon.classList.add('status-icon', status);
+    return icon;
+}
+
+const createTimeText = (time) => {
+    const timeElement = document.createElement('p');
+    timeElement.classList.add('ping-time');
+    timeElement.textContent = `${time} ms`;
+    return timeElement;
+}
+
 const createEventListener = () => {
 	    if (statusStream) {
 	        return statusStream;
@@ -39,15 +55,25 @@ const createEventListener = () => {
 	        const payload = JSON.parse(event.data);
 	        const statusElement = document.querySelector(`.status[data-link="${payload.link}"]`);
 	        if (statusElement) {
+                const statusClass = payload.ping.alive ? 'alive' : 'dead';
 	            const pingElement = statusElement.querySelector('.ping');
 	            if (pingElement) {
-	                pingElement.textContent = `${payload.ping.time} ms`;
+                    const childicon = pingElement.querySelectorAll('.status-icon');
+                    childicon.forEach(toRemove => toRemove.remove());
+                    pingElement.appendChild(createEventStatus(statusClass));
+                    if (statusClass === 'alive') {
+	                   const timeElement = pingElement.querySelectorAll('.ping-time');
+                       timeElement.forEach(toRemove => toRemove.remove());
+                       pingElement.appendChild(createTimeText(payload.ping.time));
+                    }
 	                return;
 	            }
-
 	            const newPingElement = document.createElement('div');
-	            newPingElement.classList.add('ping');
-	            newPingElement.textContent = `${payload.ping.time} ms`;
+                newPingElement.classList.add('ping');
+	            newPingElement.appendChild(createEventStatus(statusClass));
+                if (statusClass === 'alive') {
+                    newPingElement.appendChild(createTimeText(payload.ping.time));
+                }
 	            statusElement.appendChild(newPingElement);
 	        }
 	    });
